@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
-from blogging.models import Post
+from blogging.models import Post, Category
+from rest_framework import viewsets, permissions
+from blogging.serializers import PostSerializer, CategorySerializer
 
 def stub_view(request, *args, **kwargs):
 	body = 'Stub View\n\n'
@@ -20,6 +22,7 @@ def list_view(request):
 	context = {'posts': posts}
 	return render(request, 'blogging/list.html', context)
 
+
 def detail_view(request, post_id):
 	published = Post.objects.exclude(published_date__exact=None)
 	try:
@@ -29,3 +32,14 @@ def detail_view(request, post_id):
 	context = {'post': post}
 	return render(request, 'blogging/detail.html', context)
 
+
+class PostViewSet(viewsets.ModelViewSet):
+	queryset = Post.objects.all().order_by('-modified_date')
+	serializer_class = PostSerializer
+	permission_classes = [permissions.IsAuthenticated]
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+	queryset = Category.objects.all()
+	serializer_class = CategorySerializer
+	permission_classes = [permissions.IsAuthenticated]
